@@ -10,6 +10,10 @@ import {
   Trash2,
   Eye,
   ThumbsUp,
+  ImageIcon,
+  ZoomIn,
+  AlertTriangle,
+  FileText,
 } from "lucide-react"
 import Image from "next/image"
 
@@ -113,6 +117,70 @@ const allArticles = [
   },
 ]
 
+// 皮肤病图片案例数据
+const skinCaseImages = [
+  {
+    id: 1,
+    image: "/images/case-eczema-1.jpg",
+    title: "湿疹 - 手部",
+    disease: "湿疹",
+    stage: "急性期",
+    description: "手部急性湿疹表现，可见红斑、丘疹、水疱",
+    severity: "中度",
+    tags: ["湿疹", "手部", "急性期"],
+  },
+  {
+    id: 2,
+    image: "/images/case-eczema-2.jpg",
+    title: "湿疹 - 面部",
+    disease: "湿疹",
+    stage: "亚急性期",
+    description: "面部湿疹，皮肤干燥、脱屑，轻度红斑",
+    severity: "轻度",
+    tags: ["湿疹", "面部", "亚急性期"],
+  },
+  {
+    id: 3,
+    image: "/images/case-acne-1.jpg",
+    title: "痤疮 - 丘疹型",
+    disease: "痤疮",
+    stage: "活动期",
+    description: "面部丘疹型痤疮，可见红色炎性丘疹",
+    severity: "中度",
+    tags: ["痤疮", "丘疹", "炎症", "青春痘"],
+  },
+  {
+    id: 4,
+    image: "/images/case-acne-2.jpg",
+    title: "痤疮 - 囊肿型",
+    disease: "痤疮",
+    stage: "活动期",
+    description: "严重囊肿型痤疮，需要专业治疗",
+    severity: "重度",
+    tags: ["痤疮", "囊肿", "重度", "青春痘"],
+  },
+  {
+    id: 5,
+    image: "/images/case-psoriasis-1.jpg",
+    title: "银屑病 - 斑块型",
+    disease: "银屑病",
+    stage: "稳定期",
+    description: "典型银屑病斑块，边界清晰，覆银白色鳞屑",
+    severity: "中度",
+    tags: ["银屑病", "斑块", "鳞屑"],
+  },
+  {
+    id: 6,
+    image: "/images/case-urticaria-1.jpg",
+    title: "荨麻疹",
+    disease: "荨麻疹",
+    stage: "急性期",
+    description: "急性荨麻疹风团，隆起性红斑",
+    severity: "轻度",
+    tags: ["荨麻疹", "风团", "过敏"],
+  },
+]
+
 interface SearchPageProps {
   onClose: () => void
   onSelectArticle: (article: (typeof allArticles)[0]) => void
@@ -135,18 +203,22 @@ const defaultHistory = [
   "被蚊虫叮咬怎么办",
 ]
 
+type TabType = "articles" | "images"
+
 export default function SearchPage({ onClose, onSelectArticle }: SearchPageProps) {
   const [query, setQuery] = useState("")
   const [history, setHistory] = useState<string[]>(defaultHistory)
   const [isFocused, setIsFocused] = useState(true)
   const [hasSearched, setHasSearched] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabType>("articles")
+  const [selectedImage, setSelectedImage] = useState<typeof skinCaseImages[0] | null>(null)
 
   useEffect(() => {
     const input = document.getElementById("search-input")
     if (input) input.focus()
   }, [])
 
-  // 模糊搜索逻辑
+  // 模糊搜索逻辑 - 文章
   const searchResults = useMemo(() => {
     if (!query.trim()) return []
     
@@ -158,6 +230,20 @@ export default function SearchPage({ onClose, onSelectArticle }: SearchPageProps
       if (article.description.toLowerCase().includes(searchTerm)) return true
       // 匹配标签
       if (article.tags.some((tag) => tag.toLowerCase().includes(searchTerm))) return true
+      return false
+    })
+  }, [query])
+
+  // 模糊搜索逻辑 - 图片案例
+  const imageResults = useMemo(() => {
+    if (!query.trim()) return []
+    
+    const searchTerm = query.toLowerCase()
+    return skinCaseImages.filter((img) => {
+      if (img.title.toLowerCase().includes(searchTerm)) return true
+      if (img.disease.toLowerCase().includes(searchTerm)) return true
+      if (img.description.toLowerCase().includes(searchTerm)) return true
+      if (img.tags.some((tag) => tag.toLowerCase().includes(searchTerm))) return true
       return false
     })
   }, [query])
@@ -240,75 +326,173 @@ export default function SearchPage({ onClose, onSelectArticle }: SearchPageProps
         {/* 搜索结果 */}
         {showResults ? (
           <div>
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-foreground">
-                搜索结果 ({searchResults.length})
-              </h3>
-              {hasSearched && (
-                <span className="text-xs text-muted-foreground">
-                  已为您找到相关内容
-                </span>
-              )}
+            {/* Tab 切换 */}
+            <div className="mb-4 flex gap-3 border-b border-border">
+              <button
+                onClick={() => setActiveTab("articles")}
+                className={`flex items-center gap-1.5 pb-2.5 text-sm font-medium transition-colors ${
+                  activeTab === "articles"
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <FileText className="h-4 w-4" />
+                文章 ({searchResults.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("images")}
+                className={`flex items-center gap-1.5 pb-2.5 text-sm font-medium transition-colors ${
+                  activeTab === "images"
+                    ? "border-b-2 border-primary text-primary"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <ImageIcon className="h-4 w-4" />
+                图片案例 ({imageResults.length})
+              </button>
             </div>
-            
-            {searchResults.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {searchResults.map((article) => (
-                  <button
-                    key={article.id}
-                    onClick={() => onSelectArticle(article)}
-                    className="flex gap-3 rounded-xl bg-card p-3 shadow-sm text-left transition-transform active:scale-[0.98]"
-                  >
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
-                      <Image
-                        src={article.image}
-                        alt={article.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col justify-between py-0.5">
-                      <div>
-                        <h4 className="text-sm font-bold text-foreground line-clamp-2">
-                          {article.title}
-                        </h4>
-                        <div className="mt-1 flex gap-1">
-                          {article.tags.slice(0, 2).map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary"
-                            >
-                              {tag}
-                            </span>
-                          ))}
+
+            {/* 文章结果 */}
+            {activeTab === "articles" && (
+              <>
+                {searchResults.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                    {searchResults.map((article) => (
+                      <button
+                        key={article.id}
+                        onClick={() => onSelectArticle(article)}
+                        className="flex gap-3 rounded-xl bg-card p-3 shadow-sm text-left transition-transform active:scale-[0.98]"
+                      >
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
+                          <Image
+                            src={article.image}
+                            alt={article.title}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-0.5">
-                          <Eye className="h-3 w-3" />
-                          {article.views}
-                        </span>
-                        <span className="flex items-center gap-0.5">
-                          <ThumbsUp className="h-3 w-3" />
-                          {article.likes}
-                        </span>
-                      </div>
+                        <div className="flex flex-1 flex-col justify-between py-0.5">
+                          <div>
+                            <h4 className="text-sm font-bold text-foreground line-clamp-2">
+                              {article.title}
+                            </h4>
+                            <div className="mt-1 flex gap-1">
+                              {article.tags.slice(0, 2).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                            <span className="flex items-center gap-0.5">
+                              <Eye className="h-3 w-3" />
+                              {article.views}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                              <ThumbsUp className="h-3 w-3" />
+                              {article.likes}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                      <Search className="h-8 w-8 text-muted-foreground" />
                     </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <Search className="h-8 w-8 text-muted-foreground" />
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      没有找到相关文章
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      试试换个关键词搜索
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* 图片案例结果 */}
+            {activeTab === "images" && (
+              <>
+                {/* 医学提示 */}
+                <div className="mb-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+                  <p className="text-xs text-amber-700">
+                    以下图片仅供医学参考，实际诊断请咨询专业医生。部分图片可能引起不适。
+                  </p>
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground">
-                  没有找到相关内容
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  试试换个关键词搜索
-                </p>
-              </div>
+
+                {imageResults.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {imageResults.map((img) => (
+                      <button
+                        key={img.id}
+                        onClick={() => setSelectedImage(img)}
+                        className="group relative overflow-hidden rounded-xl bg-card shadow-sm transition-transform active:scale-[0.98]"
+                      >
+                        <div className="relative aspect-square overflow-hidden">
+                          <Image
+                            src={img.image}
+                            alt={img.title}
+                            fill
+                            className="object-cover transition-transform group-hover:scale-105"
+                          />
+                          {/* 严重程度标签 */}
+                          <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                            img.severity === "重度" 
+                              ? "bg-red-500 text-white" 
+                              : img.severity === "中度"
+                              ? "bg-amber-500 text-white"
+                              : "bg-green-500 text-white"
+                          }`}>
+                            {img.severity}
+                          </span>
+                          {/* 放大图标 */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 opacity-0 transition-all group-hover:bg-foreground/20 group-hover:opacity-100">
+                            <ZoomIn className="h-8 w-8 text-white" />
+                          </div>
+                        </div>
+                        <div className="p-2.5 text-left">
+                          <h4 className="text-xs font-bold text-foreground line-clamp-1">
+                            {img.title}
+                          </h4>
+                          <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                            {img.stage}
+                          </p>
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {img.tags.slice(0, 2).map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] text-primary"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      没有找到相关图片案例
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      试试搜索湿疹、痤疮、银屑病等
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -414,6 +598,101 @@ export default function SearchPage({ onClose, onSelectArticle }: SearchPageProps
           </>
         )}
       </div>
+      {/* 图片详情弹窗 */}
+      {selectedImage && (
+        <div 
+          className="absolute inset-0 z-60 flex items-center justify-center bg-foreground/80 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="w-full max-w-sm overflow-hidden rounded-2xl bg-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 图片 */}
+            <div className="relative aspect-square w-full">
+              <Image
+                src={selectedImage.image}
+                alt={selectedImage.title}
+                fill
+                className="object-cover"
+              />
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute right-3 top-3 rounded-full bg-foreground/50 p-1.5"
+              >
+                <X className="h-5 w-5 text-white" />
+              </button>
+              {/* 严重程度 */}
+              <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-medium ${
+                selectedImage.severity === "重度" 
+                  ? "bg-red-500 text-white" 
+                  : selectedImage.severity === "中度"
+                  ? "bg-amber-500 text-white"
+                  : "bg-green-500 text-white"
+              }`}>
+                {selectedImage.severity}
+              </span>
+            </div>
+            
+            {/* 信息 */}
+            <div className="p-4">
+              <h3 className="text-base font-bold text-foreground">
+                {selectedImage.title}
+              </h3>
+              
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">疾病类型</span>
+                  <span className="text-xs font-medium text-foreground">{selectedImage.disease}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">病程阶段</span>
+                  <span className="text-xs font-medium text-foreground">{selectedImage.stage}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">严重程度</span>
+                  <span className={`text-xs font-medium ${
+                    selectedImage.severity === "重度" 
+                      ? "text-red-500" 
+                      : selectedImage.severity === "中度"
+                      ? "text-amber-500"
+                      : "text-green-500"
+                  }`}>{selectedImage.severity}</span>
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                {selectedImage.description}
+              </p>
+              
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {selectedImage.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-primary/10 px-2.5 py-1 text-xs text-primary"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* 提示 */}
+              <div className="mt-4 rounded-lg bg-muted p-3">
+                <p className="text-[11px] text-muted-foreground">
+                  此图片仅供参考，如有类似症状请及时就医，以获得专业诊断和治疗建议。
+                </p>
+              </div>
+
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-medium text-primary-foreground"
+              >
+                咨询相关医生
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
