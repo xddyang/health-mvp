@@ -1,5 +1,4 @@
-"use client"
-
+// Health MVP - Search Results Page with Image Cases
 import { useState } from "react"
 import Image from "next/image"
 import {
@@ -237,12 +236,12 @@ export default function SearchResultsPage({
         </div>
 
         {/* Tabs */}
-        <div className="mt-3 flex gap-4">
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative pb-2 text-sm font-medium transition-colors ${
+              className={`relative whitespace-nowrap pb-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? "text-primary"
                   : "text-muted-foreground"
