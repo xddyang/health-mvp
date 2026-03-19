@@ -1,3 +1,5 @@
+"use client"
+
 // Health MVP - Search Results Page with Image Cases
 import { useState } from "react"
 import Image from "next/image"
