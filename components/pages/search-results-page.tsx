@@ -182,22 +182,22 @@ export default function SearchResultsPage({
 
   const filteredArticles = mockArticles.filter(
     (a) =>
-      a.title.toLowerCase().includes(query.toLowerCase()) ||
-      a.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))
+      a.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+      a.tags.some((t) => t.toLowerCase().includes(searchValue.toLowerCase()))
   )
 
   const filteredDoctors = mockDoctors.filter(
     (d) =>
-      d.name.includes(query) ||
-      d.specialty.toLowerCase().includes(query.toLowerCase())
+      d.name.includes(searchValue) ||
+      d.specialty.toLowerCase().includes(searchValue.toLowerCase())
   )
 
   const filteredImages = mockImages.filter(
     (img) =>
-      img.title.toLowerCase().includes(query.toLowerCase()) ||
-      img.disease.toLowerCase().includes(query.toLowerCase()) ||
-      img.description.toLowerCase().includes(query.toLowerCase()) ||
-      img.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))
+      img.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+      img.disease.toLowerCase().includes(searchValue.toLowerCase()) ||
+      img.description.toLowerCase().includes(searchValue.toLowerCase()) ||
+      img.tags.some((t) => t.toLowerCase().includes(searchValue.toLowerCase()))
   )
 
   const [selectedImage, setSelectedImage] = useState<typeof mockImages[0] | null>(null)
