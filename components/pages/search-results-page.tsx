@@ -12,6 +12,9 @@ import {
   FileText,
   Stethoscope,
   X,
+  ImageIcon,
+  ZoomIn,
+  AlertTriangle,
 } from "lucide-react"
 
 interface SearchResultsPageProps {
@@ -21,11 +24,12 @@ interface SearchResultsPageProps {
   onDoctorClick: (doctorId: number) => void
 }
 
-type TabType = "all" | "articles" | "doctors" | "qa"
+type TabType = "all" | "articles" | "images" | "doctors" | "qa"
 
 const tabs: { id: TabType; label: string }[] = [
   { id: "all", label: "全部" },
   { id: "articles", label: "文章" },
+  { id: "images", label: "图片案例" },
   { id: "doctors", label: "医生" },
   { id: "qa", label: "问答" },
 ]
@@ -85,6 +89,70 @@ const mockDoctors = [
   },
 ]
 
+// 皮肤病图片案例数据
+const mockImages = [
+  {
+    id: 1,
+    image: "/images/case-eczema-1.jpg",
+    title: "湿疹 - 手部",
+    disease: "湿疹",
+    stage: "急性期",
+    description: "手部急性湿疹表现，可见红斑、丘疹、水疱",
+    severity: "中度",
+    tags: ["湿疹", "手部", "急性期"],
+  },
+  {
+    id: 2,
+    image: "/images/case-eczema-2.jpg",
+    title: "湿疹 - 面部",
+    disease: "湿疹",
+    stage: "亚急性期",
+    description: "面部湿疹，皮肤干燥、脱屑，轻度红斑",
+    severity: "轻度",
+    tags: ["湿疹", "面部", "亚急性期"],
+  },
+  {
+    id: 3,
+    image: "/images/case-acne-1.jpg",
+    title: "痤疮 - 丘疹型",
+    disease: "痤疮",
+    stage: "活动期",
+    description: "面部丘疹型痤疮，可见红色炎性丘疹",
+    severity: "中度",
+    tags: ["痤疮", "丘疹", "炎症"],
+  },
+  {
+    id: 4,
+    image: "/images/case-acne-2.jpg",
+    title: "痤疮 - 囊肿型",
+    disease: "痤疮",
+    stage: "活动期",
+    description: "严重囊肿型痤疮，需要专业治疗",
+    severity: "重度",
+    tags: ["痤疮", "囊肿", "重度"],
+  },
+  {
+    id: 5,
+    image: "/images/case-psoriasis-1.jpg",
+    title: "银屑病 - 斑块型",
+    disease: "银屑病",
+    stage: "稳定期",
+    description: "典型银屑病斑块，边界清晰，覆银白色鳞屑",
+    severity: "中度",
+    tags: ["银屑病", "斑块", "鳞屑"],
+  },
+  {
+    id: 6,
+    image: "/images/case-urticaria-1.jpg",
+    title: "荨麻疹",
+    disease: "荨麻疹",
+    stage: "急性期",
+    description: "急性荨麻疹风团，隆起性红斑",
+    severity: "轻度",
+    tags: ["荨麻疹", "风团", "过敏"],
+  },
+]
+
 const mockQA = [
   {
     id: 1,
@@ -123,6 +191,16 @@ export default function SearchResultsPage({
       d.name.includes(query) ||
       d.specialty.toLowerCase().includes(query.toLowerCase())
   )
+
+  const filteredImages = mockImages.filter(
+    (img) =>
+      img.title.toLowerCase().includes(query.toLowerCase()) ||
+      img.disease.toLowerCase().includes(query.toLowerCase()) ||
+      img.description.toLowerCase().includes(query.toLowerCase()) ||
+      img.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()))
+  )
+
+  const [selectedImage, setSelectedImage] = useState<typeof mockImages[0] | null>(null)
 
   return (
     <div className="absolute inset-0 z-50 flex flex-col bg-background">
@@ -182,7 +260,7 @@ export default function SearchResultsPage({
       {/* Results */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <p className="mb-3 text-xs text-muted-foreground">
-          找到 {filteredArticles.length + filteredDoctors.length + mockQA.length} 条相关结果
+          找到 {filteredArticles.length + filteredImages.length + filteredDoctors.length + mockQA.length} 条相关结果
         </p>
 
         {/* Articles */}
@@ -231,6 +309,82 @@ export default function SearchResultsPage({
                           <ThumbsUp className="h-3 w-3" />
                           {article.likes}
                         </span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {/* Images */}
+        {(activeTab === "all" || activeTab === "images") &&
+          filteredImages.length > 0 && (
+            <div className="mb-4">
+              {activeTab === "all" && (
+                <div className="mb-2 flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-foreground">
+                    图片案例
+                  </span>
+                </div>
+              )}
+              
+              {/* 图片案例 Tab 特有的提示 */}
+              {activeTab === "images" && (
+                <div className="mb-3 flex items-start gap-2 rounded-lg bg-amber-50 p-3">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
+                  <p className="text-xs text-amber-700">
+                    以下图片仅供医学参考，实际诊断请咨询专业医生。部分图片可能引起不适。
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {filteredImages.map((img) => (
+                  <button
+                    key={img.id}
+                    onClick={() => setSelectedImage(img)}
+                    className="group relative overflow-hidden rounded-xl bg-card shadow-sm transition-transform active:scale-[0.98]"
+                  >
+                    <div className="relative aspect-square overflow-hidden">
+                      <Image
+                        src={img.image}
+                        alt={img.title}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                      {/* 严重程度标签 */}
+                      <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        img.severity === "重度" 
+                          ? "bg-red-500 text-white" 
+                          : img.severity === "中度"
+                          ? "bg-amber-500 text-white"
+                          : "bg-green-500 text-white"
+                      }`}>
+                        {img.severity}
+                      </span>
+                      {/* 放大图标 */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-foreground/0 opacity-0 transition-all group-hover:bg-foreground/20 group-hover:opacity-100">
+                        <ZoomIn className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
+                    <div className="p-2.5 text-left">
+                      <h4 className="text-xs font-bold text-foreground line-clamp-1">
+                        {img.title}
+                      </h4>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">
+                        {img.stage}
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {img.tags.slice(0, 2).map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] text-primary"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </button>
@@ -329,6 +483,99 @@ export default function SearchResultsPage({
           </div>
         )}
       </div>
+
+      {/* Image Detail Modal */}
+      {selectedImage && (
+        <div 
+          className="absolute inset-0 z-60 flex items-center justify-center bg-foreground/80 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="w-full max-w-sm overflow-hidden rounded-2xl bg-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 图片 */}
+            <div className="relative aspect-square w-full">
+              <Image
+                src={selectedImage.image}
+                alt={selectedImage.title}
+                fill
+                className="object-cover"
+              />
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute right-3 top-3 rounded-full bg-foreground/50 p-1.5"
+              >
+                <X className="h-5 w-5 text-white" />
+              </button>
+              {/* 严重程度 */}
+              <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-medium ${
+                selectedImage.severity === "重度" 
+                  ? "bg-red-500 text-white" 
+                  : selectedImage.severity === "中度"
+                  ? "bg-amber-500 text-white"
+                  : "bg-green-500 text-white"
+              }`}>
+                {selectedImage.severity}
+              </span>
+            </div>
+            
+            {/* 信息 */}
+            <div className="p-4">
+              <h3 className="text-base font-bold text-foreground">
+                {selectedImage.title}
+              </h3>
+              
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">疾病类型</span>
+                  <span className="text-xs font-medium text-foreground">{selectedImage.disease}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">病程阶段</span>
+                  <span className="text-xs font-medium text-foreground">{selectedImage.stage}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">严重程度</span>
+                  <span className={`text-xs font-medium ${
+                    selectedImage.severity === "重度" 
+                      ? "text-red-500" 
+                      : selectedImage.severity === "中度"
+                      ? "text-amber-500"
+                      : "text-green-500"
+                  }`}>{selectedImage.severity}</span>
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                {selectedImage.description}
+              </p>
+              
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {selectedImage.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-primary/10 px-2.5 py-1 text-xs text-primary"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* 提示和操作按钮 */}
+              <div className="mt-4 rounded-lg bg-muted p-3">
+                <p className="text-[11px] text-muted-foreground">
+                  此图片仅供参考，如有类似症状请及时就医，以获得专业诊断和治疗建议。
+                </p>
+              </div>
+
+              <button className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-medium text-primary-foreground">
+                咨询相关医生
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter Modal */}
       {showFilter && (
